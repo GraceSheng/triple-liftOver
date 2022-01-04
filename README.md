@@ -9,8 +9,8 @@ perl tripleliftover_v12.pl --bim input.bim --outprefix outprefix
 Upon successful completion of the script, an output file  named "outprefix.invr.txt" will be generated. It is a 5 column tab delimited text file which contains all the variants that can be lifted over to the same chromosome by UCSC liftOver. These five columns are
 - snpid: original variant name from the bim file
 - chr: chromosome
-- pos_hg38: position in destination build (current setting is GRCh38/hg38)
-- pos_hg19: position in source build (current setting is GRCh37/hg19)
+- pos_hg38: position in the destination build (current setting is GRCh38/hg38)
+- pos_hg19: position in the source build (current setting is GRCh37/hg19)
 - category: either "inverted" (is an inverted site) or "lifted"(is NOT an inverted site or cannot be deduced based on current heuristic) 
 
 ## Notes ##
