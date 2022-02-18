@@ -20,7 +20,7 @@ Upon successful completion of the script, an output file  named "outprefix.invr.
 
 -  Currently the locations for UCSC liftOver program (line 19) and the chain file "hg19ToHg38.over.chain.gz" (line 20) are hardwired in the script. Both the program and different chain files can be downloaded from UCSC (https://genome.ucsc.edu/cgi-bin/hgLiftOver) by following the links under "Command Line Tool".
 -  For the input bim file, please make sure the variant ID column is populated and each row has an unique identifier. Otherwise the results for these locations may not be as expected.
--  *triple-liftOver* does not verify alleles against the reference alleles in the source and destination reference genome builds. It is presumed that your input bim file contains alleles on the genome forward strand in the source build and the output flags any SNV site falls within BBIS regions between the source and destination build. For these inverted SNVs to have the forward strand alleles in the destination build, their original alleles need to be flipped.
+-  *triple-liftOver* does not verify alleles against the reference alleles in the source and destination reference genome builds. It is presumed that your input bim file contains alleles on the genome forward strand in the source build and the output flags any SNV site falls within BBIS regions. For these inverted SNVs to have the forward strand alleles in the destination build, their original alleles need to be flipped.
 -  Current algorithm treats an indels as a SNV and may flag it as inverted, if you don't want to flip strand for indels, exclude them from your strand flip list
  
  ## Citation ##
