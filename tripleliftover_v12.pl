@@ -5,7 +5,7 @@ use Getopt::Long;
 ##perl tripleliftover.pl --bim input.bim --outprefix outputprefix
 ##version 1.2
 ##script will output all SNPs and indicate whether they can be directly lifted over or note that they are inverted. SNPs that did not lift over successfully (in the unmapped output of liftover) or that lifted to a different chr will not be included.
-##created by - charleston chiang & grace sheng 11/10/2021
+##created by - charleston chiang & xin sheng 11/10/2021
 ##modified by - charleston 11/14/2021 - output lifted over positions too
 ##modified by - charleston 11/22/2021 - now check final output before deleting intermediate files
 
@@ -46,7 +46,7 @@ tidyup("$outprefix.$rstr.step1.invr.txt", "$outprefix.$rstr.step2.invr.txt");
 print STDERR "sorting the output file...\n";
 system("sort -k2n -k3n -o $outprefix.invr.txt $outprefix.$rstr.step2.invr.txt");
 if(-s "$outprefix.invr.txt"){
-#    system("rm *$rstr*");
+    system("rm *$rstr*");
     print STDERR "analysis finished: ", getcurrenttime(), "\n";
 }
 
