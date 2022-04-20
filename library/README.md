@@ -1,0 +1,2 @@
+# Library #
+This folder contains the pre-compiled LiftOver program. Additionally,`/chainfiles` contains chainfiles necessary to run liftover for each conversion. Chainfiles for the conversions hg19 -> 38 ( `hg19ToHg38.over.chain.gz` ) and hg18 -> 38 ( `hg18ToHg38.over.chain.gz` ) are already included. If the user needs to perform conversions between other genome builds, the files will be downloaded and stored in `/chainfiles`. 
