@@ -1,24 +1,28 @@
 #!/usr/bin/perl -w
 use strict;
+use FindBin qw($Bin);
+use File::Basename;
+use File::Spec;
 use Getopt::Long;
 
-##perl tripleliftover.pl --bim input.bim --base [base build, e.g. hg19] --target [target build] --outprefix outputprefix
-##version 1.3
+##perl tripleliftover.pl --bim input.bim --base [base build, e.g. hg19] --target [target build] [--download-chainfile] --outprefix outputprefix
+##version 1.31
 ##script assumes liftover is installed in library
 ##script assumes relevant chain files are installed in library/chainfiles, otherwise it would ask for downloads
 ##script will output all SNPs and indicate whether they can be directly lifted over or note that they are inverted. SNPs that did not lift over successfully (in the unmapped output of liftover) or that lifted to a different chr will not be included.
 ##created by - charleston chiang & grace sheng 11/10/2021
 ##modified by - charleston 11/14/2021 - output lifted over positions too
 ##modified by - charleston 11/22/2021 - now check final output before deleting intermediate files
-##modified by - charleston 4/19/2022 - interface with Jordan's script to download on the fly chainfiles
+##modified by - charleston 4/20/2022 - interface with Jordan's script to download on the fly chainfiles, fixing relative paths, etc.
 
-my ($bimfile, $outprefix, $basebuild, $targetbuild);
+my ($bimfile, $useroutprefix, $basebuild, $targetbuild, $download);
 GetOptions("bim=s" => \$bimfile,
 	   "base=s" => \$basebuild,
 	   "target=s" => \$targetbuild,
-	   "outprefix=s" => \$outprefix);
+	   "download-chainfile" => \$download,
+	   "outprefix=s" => \$useroutprefix);
 
-die "usage: perl $0 --bim input.bim --base base_genome_build --target target_genome_build --outprefix outprefix\n" if ! $bimfile;
+die "usage: perl $0 --bim input.bim --base base_genome_build --target target_genome_build [--download-chainfile] --outprefix outprefix\n" if ! $bimfile;
 
 print STDERR "\n\n";
 print STDERR "===============================================\n";
@@ -26,30 +30,36 @@ print STDERR "triple-liftOver, version 1.3\n\n";
 print STDERR "please cite Sheng et al. bioRxiv 2022 (doi: 10.1101/2022.02.19.481174) if you use this tool\n\n";
 print STDERR "for the input bim file, make sure the variant ID column is populated and each row has an unique identifier!\n";
 print STDERR "make sure python can be invoked from your path!\n";
+print STDERR "if you don't have the chainfiles necessary for liftover, you can run the script in interactive mode with --download-chainfile option\n";
 print STDERR "===============================================\n\n";
 
-my $liftover = "library/liftOver";
-my $chainfiledir = "library/chainfiles";
+my $liftover = "$Bin/library/liftOver";
+my $chainfiledir = "$Bin/library/chainfiles";
 ($basebuild, $targetbuild) = buildnameconvention($basebuild, $targetbuild);
 my $chainfile = $basebuild . "To" . $targetbuild . '.over.chain.gz';
 my $rstr = randomstring(6);
+my ($outprefix, $outdir, $outsuffix) = fileparse(File::Spec->rel2abs($useroutprefix));
 
 print STDERR "analysis started: ", getcurrenttime(), "\n";
 
 ##check if chainfile exists:
 print STDERR "checking if required chainfile exists [$basebuild => $targetbuild]\n";
-if(! -e "$chainfiledir/$chainfile"){
+if($download){
+    print STDERR "interactive mode only to download chainfiles...\n";
+    system("python $Bin/main.py $basebuild");
+    die "chainfiles download attempted. If successful, please run this script again to proceed if you do not wish to continue in interactive mode (e.g. you need to submit the job to a compute cluster)\n";
+}elsif(! -e "$chainfiledir/$chainfile"){
     print STDERR "chainfile not found in $chainfiledir, attempt to download it...\n";
-    system("python main.py $basebuild");
+    system("python $Bin/main.py $basebuild");
 }
 
 print STDERR "converting bim file into UCSC bed format...\n";
-my $tmpbedfile = "$outprefix.$rstr.txt";
+my $tmpbedfile = "$outdir/$outprefix.$rstr.txt";
 convertbim2ucscbedformat($bimfile, $tmpbedfile);
 
 print STDERR "running liftOver...\n";
-my $tmpliftedfile = "$outprefix.$rstr.lifted.txt";
-my $tmpunmappedfile = "$outprefix.$rstr.unmapped.txt";
+my $tmpliftedfile = "$outdir/$outprefix.$rstr.lifted.txt";
+my $tmpunmappedfile = "$outdir/$outprefix.$rstr.unmapped.txt";
 my $command = "$liftover $tmpbedfile $chainfiledir/$chainfile $tmpliftedfile $tmpunmappedfile";
 system($command);
 
@@ -59,16 +69,16 @@ readinliftedstructure($tmpliftedfile, \%db);
 #print STDERR scalar(keys %db), "\n";
 
 print STDERR "identifying SNPs in inverted regions...\n";
-identifyinvertedpos(\%db, "$outprefix.$rstr.step1.invr.txt");
+identifyinvertedpos(\%db, "$outdir/$outprefix.$rstr.step1.invr.txt");
 
 print STDERR "tidying up the output...\n";
-tidyup("$outprefix.$rstr.step1.invr.txt", "$outprefix.$rstr.step2.invr.txt");
+tidyup("$outdir/$outprefix.$rstr.step1.invr.txt", "$outdir/$outprefix.$rstr.step2.invr.txt");
 
 ##sort output by pos
 print STDERR "sorting the output file...\n";
-system("sort -k2n -k3n -o $outprefix.invr.txt $outprefix.$rstr.step2.invr.txt");
-if(-s "$outprefix.invr.txt"){
-    system("rm *$rstr*");
+system("sort -k2n -k3n -o $outdir/$outprefix.invr.txt $outdir/$outprefix.$rstr.step2.invr.txt");
+if(-s "$outdir/$outprefix.invr.txt"){
+    system("rm $outdir/*$rstr*");
     print STDERR "analysis finished: ", getcurrenttime(), "\n";
 }
 
