@@ -1,4 +1,4 @@
-snpid	chr	pos_hg38	pos_hg19	category
+snpid	chr	pos_[Hg38]	pos_[hg19]	category
 10:51190229:C:T	10	45791161	51190229	lifted
 10:51190273:C:T	10	45791205	51190273	lifted
 10:51190337:A:G	10	45791269	51190337	lifted
