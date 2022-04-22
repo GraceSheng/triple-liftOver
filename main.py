@@ -12,6 +12,9 @@ import os
 def main(argv):
     fileList= urlParser.parse(sys.argv[1])
     running = True
+    print("Current bin: " + os.path.dirname(__file__))
+    bin = os.path.dirname(__file__).replace("\\", "/")
+
     print("-------------------------------------------------------------------------------")
     print("Please enter the chain file you would like to download from the available files")
     print("-------------------------------------------------------------------------------")
@@ -27,7 +30,7 @@ def main(argv):
             userInput = input("Type \"Yes\" to confirm download or press any key to select another file: ")
             if userInput== "Yes":
                 print("Downloading "+fileList[file])
-                command = "wget --timestamping \'ftp://"+fileList[file] + "\' -O library/chainfiles/"+sys.argv[1]+"To"+file+".over.chain.gz"
+                command = "wget --timestamping \'ftp://"+fileList[file] + "\' -O " + bin+"/library/chainfiles/"+sys.argv[1]+"To"+file+".over.chain.gz"
                 print(command)
                 os.system(command)
                 userInput = input("Type \"Continue\" to download another file or press any key to continue to triple lift over: ")
