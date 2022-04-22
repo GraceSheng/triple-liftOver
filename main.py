@@ -12,7 +12,7 @@ import os
 def main(argv):
     fileList= urlParser.parse(sys.argv[1])
     running = True
-    print("Current bin: " + os.path.dirname(__file__))
+    #print("Current bin: " + os.path.dirname(__file__))
     bin = os.path.dirname(__file__).replace("\\", "/")
 
     print("-------------------------------------------------------------------------------")
