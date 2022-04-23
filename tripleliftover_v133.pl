@@ -6,14 +6,14 @@ use File::Spec;
 use Getopt::Long;
 
 ##perl tripleliftover.pl --bim input.bim --base [base build, e.g. hg19] --target [target build] [--download-chainfile] --outprefix outputprefix
-##version 1.31
+##version 1.33
 ##script assumes liftover is installed in library
 ##script assumes relevant chain files are installed in library/chainfiles, otherwise it would ask for downloads
 ##script will output all SNPs and indicate whether they can be directly lifted over or note that they are inverted. SNPs that did not lift over successfully (in the unmapped output of liftover) or that lifted to a different chr will not be included.
 ##created by - charleston chiang & grace sheng 11/10/2021
 ##modified by - charleston 11/14/2021 - output lifted over positions too
 ##modified by - charleston 11/22/2021 - now check final output before deleting intermediate files
-##modified by - charleston 4/20/2022 - interface with Jordan's script to download on the fly chainfiles, fixing relative paths, etc.
+##modified by - charleston 4/21/2022 - interface with Jordan's script to download on the fly chainfiles, fixing relative paths, etc.
 
 my ($bimfile, $useroutprefix, $basebuild, $targetbuild, $download);
 GetOptions("bim=s" => \$bimfile,
@@ -26,7 +26,7 @@ die "usage: perl $0 --bim input.bim --base base_genome_build --target target_gen
 
 print STDERR "\n\n";
 print STDERR "===============================================\n";
-print STDERR "triple-liftOver, version 1.3\n\n";
+print STDERR "triple-liftOver, version 1.33\n\n";
 print STDERR "please cite Sheng et al. bioRxiv 2022 (doi: 10.1101/2022.02.19.481174) if you use this tool\n\n";
 print STDERR "for the input bim file, make sure the variant ID column is populated and each row has an unique identifier!\n";
 print STDERR "make sure python can be invoked from your path!\n";
@@ -51,6 +51,9 @@ if($download){
 }elsif(! -e "$chainfiledir/$chainfile"){
     print STDERR "chainfile not found in $chainfiledir, attempt to download it...\n";
     system("python $Bin/main.py $basebuild");
+}
+if(! -e "$chainfiledir/$chainfile"){
+    die "ERROR: chainfile not found in $chainfiledir. Please double check it was downloaded successfully\n";
 }
 
 print STDERR "converting bim file into UCSC bed format...\n";
